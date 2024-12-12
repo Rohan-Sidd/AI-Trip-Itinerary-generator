@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { chatSession } from "@/service/AIMODAL";
 
 
-
 function CreateTrip() {
   const [place, setPlace] = useState();
   const [formData, setFormData] = useState({});
@@ -34,7 +33,7 @@ function CreateTrip() {
 
     const result = await chatSession.sendMessage(FINAL_PROMPT)
 
-    console.log(result?.response?.text)
+    console.log(result?.response?.text())
   }
 
   return (
