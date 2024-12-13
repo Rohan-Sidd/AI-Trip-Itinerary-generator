@@ -5,11 +5,18 @@ import { AI_PROMPT, travelBudget, travelList } from "@/constants/options";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { chatSession } from "@/service/AIMODAL";
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+} from "@/components/ui/dialog";
+import { DialogTitle } from "@radix-ui/react-dialog";
 
 function CreateTrip() {
   const [place, setPlace] = useState();
   const [formData, setFormData] = useState({});
+  const [openDialog, setOpenDialog] = useState(false); 
 
   const handleInputChange = (name, value) => {
     if(name=='noOfDays && value >= 7'){
@@ -24,6 +31,14 @@ function CreateTrip() {
   }, [formData]);
 
   const onGenerateTrip=async()=>{
+
+    const user=localStorage.getItem('user');
+
+    if(!user)
+    {
+      setOpenDialog(true)
+      return ;
+    }
     if(formData?.noOfDays >= 7 && !formData?.location || !formData?.noOfDays|| !formData?.noOfPeople || !formData?.budget) {
       toast("Please fill all the details")
       return ;
@@ -114,6 +129,18 @@ function CreateTrip() {
       <div className="my-10">
         <Button onClick={onGenerateTrip}>Generate Trip</Button>
       </div>
+      <Dialog open={openDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle></DialogTitle>
+            <DialogDescription>
+              <img src="/logo.svg" />
+              <h2 className="font-bold text-lg"> Sign In With Google</h2>
+              <p>Sign in to the App with Google authentication securely</p>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
