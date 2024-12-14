@@ -10,13 +10,17 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { DialogTitle } from "@radix-ui/react-dialog";
+
+import { FcGoogle } from "react-icons/fc";
+import { useGoogleLogin } from "@react-oauth/google";
+
 
 function CreateTrip() {
   const [place, setPlace] = useState();
   const [formData, setFormData] = useState({});
-  const [openDialog, setOpenDialog] = useState(false); 
+  const [openDailog, setOpenDailog] = useState(false); 
 
   const handleInputChange = (name, value) => {
     if(name=='noOfDays && value >= 7'){
@@ -30,15 +34,22 @@ function CreateTrip() {
     console.log(formData);
   }, [formData]);
 
+  const login = useGoogleLogin({
+    onSuccess: (codeResp) => GetUserProfile(codeResp),
+    onError: (error) => console.log(error),
+  });
+
   const onGenerateTrip=async()=>{
 
     const user=localStorage.getItem('user');
+  
 
     if(!user)
     {
-      setOpenDialog(true)
+      setOpenDailog(true)
       return ;
     }
+
     if(formData?.noOfDays >= 7 && !formData?.location || !formData?.noOfDays|| !formData?.noOfPeople || !formData?.budget) {
       toast("Please fill all the details")
       return ;
@@ -50,6 +61,24 @@ function CreateTrip() {
 
     console.log(result?.response?.text())
   }
+  const GetUserProfile = (tokenInfo) => {
+    axios
+      .get(
+        `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`,
+        {
+          headers: {
+            Authorization: `Bearer ${tokenInfo?.access_token}`,
+            Accept: "application/json",
+          },
+        }
+      )
+      .then((resp) => {
+        console.log('token-info'+resp);
+        localStorage.setItem("user", JSON.stringify(resp.data));
+        setOpenDailog(false);
+        onGenerateTrip(); 
+      });
+  };
 
   return (
     <div className="sm:px-10 md:px-32 lg:px-56 xl:px-10 mt-10">
@@ -129,14 +158,28 @@ function CreateTrip() {
       <div className="my-10">
         <Button onClick={onGenerateTrip}>Generate Trip</Button>
       </div>
-      <Dialog open={openDialog}>
+
+      <Dialog open={openDailog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle></DialogTitle>
             <DialogDescription>
-              <img src="/logo.svg" />
-              <h2 className="font-bold text-lg"> Sign In With Google</h2>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <img
+                  src="/logo.svg"
+                  alt="Logo"
+                  style={{ marginRight: "10px" }}
+                />
+                <h2 className="text-lg font-bold">aTrip</h2>
+              </div>
+              <h2 className="font-bold text-lg mt-7">Sign In With Google</h2>
               <p>Sign in to the App with Google authentication securely</p>
+              <Button
+                className="w-full mt-5 flex gap-4 items-center"
+                onClick={login}
+              >
+                <FcGoogle className="h-7 w-7" />
+                Sign In With Google
+              </Button>
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
