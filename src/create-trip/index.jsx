@@ -12,6 +12,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import axios from "axios";
+
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/service/firebaseConfig";
 
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -35,14 +39,25 @@ function CreateTrip() {
   }, [formData]);
 
   const login = useGoogleLogin({
-    onSuccess: (codeResp) => GetUserProfile(codeResp),
+    onSuccess: (codeResp) => GetUserProfile(codeResp.access_token),
     onError: (error) => console.log(error),
   });
+
+  const saveAiTrip=async(TripData)=>{
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    const docId = Date.now().toString();
+    await setDoc(doc(db, "AITrips", docId), {
+      userSelection: formData,
+      tripData: JSON.parse(TripData),
+      userEmail: user?.email,
+      id: docId
+    });
+  }
 
   const onGenerateTrip=async()=>{
 
     const user=localStorage.getItem('user');
-  
 
     if(!user)
     {
@@ -54,6 +69,7 @@ function CreateTrip() {
       toast("Please fill all the details")
       return ;
     }
+    
     toast("Trip created Successfully")
     const FINAL_PROMPT = AI_PROMPT.replace('{location}',formData?.location?.label).replace('{totalDays}',formData?.noOfDays).replace('{noOfPeople}',formData?.noOfPeople).replace('{budget}',formData?.budget);
 
@@ -61,24 +77,24 @@ function CreateTrip() {
 
     console.log(result?.response?.text())
   }
-  const GetUserProfile = (tokenInfo) => {
-    axios
-      .get(
-        `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${tokenInfo?.access_token}`,
-        {
-          headers: {
-            Authorization: `Bearer ${tokenInfo?.access_token}`,
-            Accept: "application/json",
-          },
-        }
-      )
-      .then((resp) => {
-        console.log('token-info'+resp);
-        localStorage.setItem("user", JSON.stringify(resp.data));
-        setOpenDailog(false);
-        onGenerateTrip(); 
-      });
-  };
+const GetUserProfile = (access_token) => {
+  axios
+    .get("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        Accept: "Application/json",
+      },
+    })
+    .then((resp) => {
+      console.log("User Info:", resp.data); 
+      localStorage.setItem("user", JSON.stringify(resp.data)); 
+      setOpenDailog(false);
+      onGenerateTrip(); 
+      setUserInfo(resp.data); 
+    })
+};
+
+
 
   return (
     <div className="sm:px-10 md:px-32 lg:px-56 xl:px-10 mt-10">
