@@ -5,6 +5,7 @@ import { AI_PROMPT, travelBudget, travelList } from "@/constants/options";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { chatSession } from "@/service/AIMODAL";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +26,7 @@ function CreateTrip() {
   const [place, setPlace] = useState();
   const [formData, setFormData] = useState({});
   const [openDailog, setOpenDailog] = useState(false); 
+  const [loading, setLoading] = useState(false)
 
   const handleInputChange = (name, value) => {
     if(name=='noOfDays && value >= 7'){
@@ -44,6 +46,8 @@ function CreateTrip() {
   });
 
   const saveAiTrip=async(TripData)=>{
+
+    setLoading(true);
     const user = JSON.parse(localStorage.getItem("user"));
 
     const docId = Date.now().toString();
@@ -53,6 +57,7 @@ function CreateTrip() {
       userEmail: user?.email,
       id: docId
     });
+    setLoading(false);
   }
 
   const onGenerateTrip=async()=>{
@@ -71,11 +76,14 @@ function CreateTrip() {
     }
     
     toast("Trip created Successfully")
+    setLoading(true)
     const FINAL_PROMPT = AI_PROMPT.replace('{location}',formData?.location?.label).replace('{totalDays}',formData?.noOfDays).replace('{noOfPeople}',formData?.noOfPeople).replace('{budget}',formData?.budget);
 
     const result = await chatSession.sendMessage(FINAL_PROMPT)
 
     console.log(result?.response?.text())
+    setLoading(false)
+    saveAiTrip(result?.response?.text());
   }
 const GetUserProfile = (access_token) => {
   axios
@@ -171,8 +179,14 @@ const GetUserProfile = (access_token) => {
           ))}
         </div>
       </div>
-      <div className="my-10">
-        <Button onClick={onGenerateTrip}>Generate Trip</Button>
+      <div className="my-10 justify-end flex">
+        <Button disabled={loading} onClick={onGenerateTrip}>
+          {loading ? (
+            <AiOutlineLoading3Quarters className="h-7 w-7 animate-spin" />
+          ) : (
+            "Generate Trip"
+          )}
+        </Button>
       </div>
 
       <Dialog open={openDailog}>
