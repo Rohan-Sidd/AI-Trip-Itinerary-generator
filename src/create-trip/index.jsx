@@ -20,6 +20,7 @@ import { db } from "@/service/firebaseConfig";
 
 import { FcGoogle } from "react-icons/fc";
 import { useGoogleLogin } from "@react-oauth/google";
+import { useNavigate} from "react-router-dom";
 
 
 function CreateTrip() {
@@ -27,6 +28,7 @@ function CreateTrip() {
   const [formData, setFormData] = useState({});
   const [openDailog, setOpenDailog] = useState(false); 
   const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
   const handleInputChange = (name, value) => {
     if(name=='noOfDays && value >= 7'){
@@ -45,8 +47,7 @@ function CreateTrip() {
     onError: (error) => console.log(error),
   });
 
-  const saveAiTrip=async(TripData)=>{
-
+  const saveAiTrip = async (TripData) => {
     setLoading(true);
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -55,10 +56,11 @@ function CreateTrip() {
       userSelection: formData,
       tripData: JSON.parse(TripData),
       userEmail: user?.email,
-      id: docId
+      id: docId,
     });
     setLoading(false);
-  }
+    navigate("/view-trip/" + docId);
+  };
 
   const onGenerateTrip=async()=>{
 
