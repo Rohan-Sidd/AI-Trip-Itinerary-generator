@@ -1,8 +1,24 @@
-import React from "react";
+import { GetPlaceDetails} from "@/service/GlobalApi";
+import React, {useState, useEffect} from "react";
 import { FiShare2 } from "react-icons/fi";
 
 
 function InfoSection({ trip }) {
+    const [photoUrl, setPhotoUrl] = useState();
+    useEffect(() => {
+      trip && GetPlacePhoto();
+    }, [trip]);
+
+    const GetPlacePhoto = async () => {
+      const data = {
+        textQuery: trip?.userSelection?.location?.label,
+      };
+      console.log(data)
+      const result = await GetPlaceDetails(data).then((resp) => {
+        console.log(resp.data);
+
+      });
+    };
   return (
     <div>
       <img
