@@ -1,6 +1,7 @@
-import { GetPlaceDetails} from "@/service/GlobalApi";
+import { GetPlaceDetails, PHOTO_REF_URL} from "@/service/GlobalApi";
 import React, {useState, useEffect} from "react";
 import { FiShare2 } from "react-icons/fi";
+
 
 
 function InfoSection({ trip }) {
@@ -16,13 +17,18 @@ function InfoSection({ trip }) {
       console.log(data)
       const result = await GetPlaceDetails(data).then((resp) => {
         console.log(resp.data);
-
+        const PhotoUrl = PHOTO_REF_URL.replace(
+          "{NAME}",
+          resp.data.places[0].photos[9].name
+        );
+        console.log(PhotoUrl)
+        setPhotoUrl(PhotoUrl);
       });
     };
   return (
     <div>
       <img
-        src="/background.jpg"
+        src={photoUrl ? photoUrl : "background.jpg"}
         className="h-[350px] w-full object-cover rounded-xl"
       />
       <div className="flex justify-between items-center">

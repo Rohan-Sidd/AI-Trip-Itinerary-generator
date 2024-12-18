@@ -11,6 +11,8 @@ function PlacesToVisit({ trip }) {
             .sort()
             .map((dayKey, index) => {
               const dayDetails = trip.tripData.itinerary[dayKey];
+              console.log(dayDetails);
+
                const formattedDayKey = `Day ${dayKey.replace("day", "")}`;
               return (
                 <div key={index}>
